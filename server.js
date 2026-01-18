@@ -126,6 +126,27 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
+// Single URL stats
+app.get('/api/stats/:shortCode', async (req, res) => {
+    try {
+        const { shortCode } = req.params;
+
+        const result = await pool.query(
+            'SELECT original_url, short_code, clicks, created_at FROM urls WHERE short_code = $1',
+            [shortCode]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'URL not found' });
+        }
+
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Error fetching stats:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+}) 
+
 // Start server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
